@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>$YOU Memecoin | It's Up To You</title>
-  <link rel="icon" type="image/jpeg" href="logo.jpeg" />
+  <link rel="icon" type="image/jpeg" href="logo1.jpeg" />
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
   <link
@@ -229,7 +229,7 @@
       }
       animate();
     </script>
-    <section class="relative min-h-screen flex flex-col items-center justify-center pt-20 px-4">
+    <section class="relative min-h-screen flex flex-col items-center justify-center pt-48 md:pt-20 px-4">
       <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 -z-10 opacity-30">
         <div class="bg-comic-red/50 border-r-4 border-b-4 border-black transform -skew-x-2"></div>
         <div class="bg-comic-blue/50 border-b-4 border-black transform skew-y-1"></div>
@@ -239,9 +239,8 @@
       <div class="relative group cursor-pointer perspective-1000">
         <div class="animate-float">
           <img alt="Hero Comic Collage"
-            class="comic-border w-full max-w-2xl mx-auto rounded-2xl transform transition-transform group-hover:scale-105"
-            src="logo.jpeg" />
-
+            class="comic-border w-full max-w-sm md:max-w-2xl mx-auto rounded-2xl transform transition-transform group-hover:scale-105"
+            src="logo1.jpeg" />
         </div>
         <div class="mt-8 text-center relative z-10">
           <h1
@@ -260,7 +259,7 @@
           <p class="font-marker text-xl text-black dark:text-white">CONTRACT ADDRESS</p>
           <div class="flex items-center gap-2 w-full bg-slate-100 dark:bg-zinc-700 p-3 rounded border-2 border-black">
             <code class="truncate text-sm font-mono flex-1">0xYOU_MEME_CONTRACT_ADDRESS_MAINNET</code>
-            <button
+            <button id="copyButton"
               class="bg-primary hover:bg-yellow-400 p-2 comic-border-sm flex items-center justify-center transition-colors"
               onclick="copyToClipboard()">
               <span class="material-icons text-black">content_copy</span>
@@ -279,6 +278,7 @@
         </button>
       </div>
     </section>
+
     <section class="py-24 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
       <div class="comic-border bg-white dark:bg-zinc-900 p-8 transform rotate-1 hover:rotate-0 transition-transform">
         <div class="bg-comic-red w-16 h-16 flex items-center justify-center comic-border-sm -mt-12 -ml-12 mb-6">
@@ -334,7 +334,7 @@
   <footer class="bg-black text-white py-12 px-6">
     <div class="max-w-7xl mx-auto flex flex-col items-center gap-8">
       <div class="font-display text-5xl text-primary">
-        <img src="logo.jpeg" alt="$YOU Logo" class="h-20 w-auto rounded-xl border-4 border-black" />
+        <img src="logo1.jpeg" alt="$YOU Logo" class="h-20 w-auto rounded-xl border-4 border-black" />
       </div>
       <div class="flex gap-8 font-display text-2xl">
         <a class="hover:text-comic-red transition-colors" href="#">TWITTER</a>
@@ -346,7 +346,13 @@
     function copyToClipboard() {
       const text = "0xYOU_MEME_CONTRACT_ADDRESS_MAINNET";
       navigator.clipboard.writeText(text).then(() => {
-        alert("Contract Address Copied!");
+        const btn = document.getElementById('copyButton');
+        const icon = btn.querySelector('.material-icons');
+        icon.textContent = 'check';
+
+        setTimeout(() => {
+          icon.textContent = 'content_copy';
+        }, 2000);
       });
     }
     // Simple infinite scroll mimic
