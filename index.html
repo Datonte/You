@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html class="scroll-smooth dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>$YOU Memecoin | It's Up To You</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpeg" />
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bangers&amp;family=Permanent+Marker&amp;family=Inter:wght@400;700;900&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#FFDE00", // Bright comic yellow
+            "background-light": "#ffffff",
+            "background-dark": "#0a0a0a",
+            "comic-red": "#E63946",
+            "comic-blue": "#457B9D",
+            "comic-green": "#2A9D8F",
+          },
+          fontFamily: {
+            display: ["Bangers", "cursive"],
+            marker: ["Permanent Marker", "cursive"],
+            body: ["Inter", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem",
+            "xl": "1.5rem",
+          },
+          animation: {
+            'float': 'float 3s ease-in-out infinite',
+            'wiggle': 'wiggle 1s ease-in-out infinite',
+            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            wiggle: {
+              '0%, 100%': { transform: 'rotate(-3deg)' },
+              '50%': { transform: 'rotate(3deg)' },
+            }
+          }
+        },
+      },
+    };
+  </script>
+  <style>
+    .halftone {
+      background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+
+    .comic-border {
+      border: 4px solid black;
+      box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+    }
+
+    .comic-border-sm {
+      border: 3px solid black;
+      box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+    }
+
+    .dynamic-panel {
+      clip-path: polygon(0% 5%, 100% 0%, 95% 95%, 5% 100%);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, #E63946 0%, #457B9D 50%, #2A9D8F 100%);
+    }
+
+    .speech-bubble {
+      position: relative;
+      background: #ffffff;
+      border: 4px solid #000;
+    }
+
+    .speech-bubble:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border: 20px solid transparent;
+      border-top-color: #000;
+      border-bottom: 0;
+      margin-left: -20px;
+      margin-bottom: -20px;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-body selection:bg-primary selection:text-black">
+  <nav class="fixed top-6 right-6 z-50 flex flex-col gap-4">
+    <a class="comic-border-sm bg-primary px-6 py-2 font-display text-2xl rotate-3 hover:rotate-0 transition-all active:scale-95 text-black"
+      href="#">
+      TWITTER
+    </a>
+    <a class="comic-border-sm bg-comic-blue px-6 py-2 font-display text-2xl -rotate-2 hover:rotate-0 transition-all active:scale-95 text-white"
+      href="#">
+      DEXSCREENER
+    </a>
+  </nav>
+  <div class="fixed top-6 left-6 z-50">
+    <div class="comic-border-sm bg-white dark:bg-zinc-900 px-4 py-2 font-display text-3xl text-comic-red">
+      $YOU
+    </div>
+  </div>
+  <main class="relative overflow-hidden min-h-screen">
+    <div class="absolute inset-0 z-0 pointer-events-none opacity-20 dark:opacity-40 halftone"></div>
+    <canvas id="electricity-canvas" class="fixed inset-0 z-0 pointer-events-none"></canvas>
+    <script>
+      const canvas = document.getElementById('electricity-canvas');
+      const ctx = canvas.getContext('2d');
+
+      let width, height;
+      let lightning = [];
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      // Helper for random in range
+      function random(min, max) { return Math.random() * (max - min) + min; }
+
+      class Lightning {
+        constructor(x, y, targetX, targetY) {
+          this.x = x;
+          this.y = y;
+          this.targetX = targetX;
+          this.targetY = targetY;
+          this.life = random(10, 20); // Lasts 10-20 frames
+          this.maxLife = this.life;
+          this.opacity = 1;
+          // Recursive midpoint displacement for realistic jagged shape
+          this.segments = this.createSegments(x, y, targetX, targetY, 200);
+        }
+
+        createSegments(x1, y1, x2, y2, displace) {
+          if (displace < 2) return [{ x: x1, y: y1 }, { x: x2, y: y2 }];
+
+          let midX = (x1 + x2) / 2;
+          let midY = (y1 + y2) / 2;
+
+          // Jitter the midpoint
+          midX += (Math.random() - 0.5) * displace;
+          midY += (Math.random() - 0.5) * displace;
+
+          let left = this.createSegments(x1, y1, midX, midY, displace / 2);
+          let right = this.createSegments(midX, midY, x2, y2, displace / 2);
+
+          return left.concat(right);
+        }
+
+        update() {
+          this.life--;
+          this.opacity = this.life / this.maxLife;
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.moveTo(this.segments[0].x, this.segments[0].y);
+          for (let i = 1; i < this.segments.length; i++) {
+            ctx.lineTo(this.segments[i].x, this.segments[i].y);
+          }
+
+          // Intense glow (Yellow Halo)
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = '#FFDE00';
+          ctx.strokeStyle = `rgba(255, 222, 0, ${this.opacity})`;
+          ctx.lineWidth = 4;
+          ctx.stroke();
+
+          // Bright Core (White)
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Frequent, chaotic spawning
+        if (Math.random() < 0.3) {
+          let startX = random(0, width);
+          let startY = random(0, height);
+          // Bolt arcs to a somewhat nearby point
+          let endX = startX + random(-400, 400);
+          let endY = startY + random(-400, 400);
+          lightning.push(new Lightning(startX, startY, endX, endY));
+        }
+
+        // Occasional cluster/burst
+        if (Math.random() < 0.01) {
+          for (let i = 0; i < 3; i++) {
+            let cx = random(0, width);
+            let cy = random(0, height);
+            lightning.push(new Lightning(cx, cy, cx + random(-200, 200), cy + random(-200, 200)));
+          }
+          // Screen flash on burst
+          ctx.fillStyle = 'rgba(255, 222, 0, 0.15)';
+          ctx.fillRect(0, 0, width, height);
+        }
+
+        // Update and draw bolts
+        for (let i = lightning.length - 1; i >= 0; i--) {
+          lightning[i].update();
+          lightning[i].draw();
+          if (lightning[i].life <= 0) lightning.splice(i, 1);
+        }
+
+        requestAnimationFrame(animate);
+      }
+      animate();
+    </script>
+    <section class="relative min-h-screen flex flex-col items-center justify-center pt-20 px-4">
+      <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 -z-10 opacity-30">
+        <div class="bg-comic-red/50 border-r-4 border-b-4 border-black transform -skew-x-2"></div>
+        <div class="bg-comic-blue/50 border-b-4 border-black transform skew-y-1"></div>
+        <div class="bg-primary/50 border-r-4 border-black transform skew-x-3"></div>
+        <div class="bg-comic-green/50 transform -skew-y-2"></div>
+      </div>
+      <div class="relative group cursor-pointer perspective-1000">
+        <div class="animate-float">
+          <img alt="Hero Comic Collage"
+            class="comic-border w-full max-w-2xl mx-auto rounded-2xl transform transition-transform group-hover:scale-105"
+            src="logo.jpeg" />
+
+        </div>
+        <div class="mt-8 text-center relative z-10">
+          <h1
+            class="font-display text-7xl md:text-9xl tracking-tighter text-black dark:text-white drop-shadow-[4px_4px_0px_#FFDE00] mb-4">
+            IT'S UP <span class="text-comic-red">TO YOU</span>
+          </h1>
+          <p
+            class="font-marker text-2xl md:text-3xl text-black dark:text-white transform -rotate-1 mt-4 max-w-2xl mx-auto leading-relaxed">
+            The power to change your life is in your hands. <br />
+            <span class="text-comic-blue">Make it count.</span>
+          </p>
+        </div>
+      </div>
+      <div class="mt-12 max-w-xl w-full">
+        <div class="speech-bubble comic-border bg-white dark:bg-zinc-800 p-6 flex flex-col items-center gap-4">
+          <p class="font-marker text-xl text-black dark:text-white">CONTRACT ADDRESS</p>
+          <div class="flex items-center gap-2 w-full bg-slate-100 dark:bg-zinc-700 p-3 rounded border-2 border-black">
+            <code class="truncate text-sm font-mono flex-1">0xYOU_MEME_CONTRACT_ADDRESS_MAINNET</code>
+            <button
+              class="bg-primary hover:bg-yellow-400 p-2 comic-border-sm flex items-center justify-center transition-colors"
+              onclick="copyToClipboard()">
+              <span class="material-icons text-black">content_copy</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-16 flex flex-wrap justify-center gap-6">
+        <button
+          class="comic-border bg-comic-green text-white font-display text-4xl px-12 py-4 hover:scale-110 active:scale-95 transition-transform">
+          BUY $YOU
+        </button>
+        <button
+          class="comic-border bg-comic-red text-white font-display text-4xl px-12 py-4 hover:scale-110 active:scale-95 transition-transform">
+          JOIN THE SQUAD
+        </button>
+      </div>
+    </section>
+    <section class="py-24 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+      <div class="comic-border bg-white dark:bg-zinc-900 p-8 transform rotate-1 hover:rotate-0 transition-transform">
+        <div class="bg-comic-red w-16 h-16 flex items-center justify-center comic-border-sm -mt-12 -ml-12 mb-6">
+          <span class="material-icons text-white text-3xl">groups</span>
+        </div>
+        <h3 class="font-display text-4xl mb-4 text-comic-red">COMMUNITY POWER</h3>
+        <p class="text-lg leading-relaxed font-medium">The narrative isn't written by us. It's written by the community.
+          Every meme, every post, every buy moves the needle.</p>
+      </div>
+      <div
+        class="comic-border bg-white dark:bg-zinc-900 p-8 transform -rotate-2 hover:rotate-0 transition-transform mt-8 md:mt-0">
+        <div class="bg-comic-blue w-16 h-16 flex items-center justify-center comic-border-sm -mt-12 -ml-12 mb-6">
+          <span class="material-icons text-white text-3xl">trending_up</span>
+        </div>
+        <h3 class="font-display text-4xl mb-4 text-comic-blue">MOON MISSION</h3>
+        <p class="text-lg leading-relaxed font-medium">Fueled by 100% pure organic energy and high-grade 3D comic art.
+          We're pointing straight to the stars.</p>
+      </div>
+      <div
+        class="comic-border bg-white dark:bg-zinc-900 p-8 transform rotate-3 hover:rotate-0 transition-transform mt-8 md:mt-0">
+        <div
+          class="bg-primary w-16 h-16 flex items-center justify-center comic-border-sm -mt-12 -ml-12 mb-6 text-black">
+          <span class="material-icons text-3xl">security</span>
+        </div>
+        <h3 class="font-display text-4xl mb-4 text-black dark:text-primary">NO CAP NO TAX</h3>
+        <p class="text-lg leading-relaxed font-medium">Zero taxes. Liquidity burned. Contract renounced. It's safe, it's
+          fun, and it's literally all up to YOU.</p>
+      </div>
+    </section>
+    <div class="relative py-20">
+      <div class="bg-black py-10 -rotate-2 w-[120%] -ml-[10%] border-y-8 border-primary overflow-hidden">
+        <div class="whitespace-nowrap flex animate-infinite-scroll">
+          <div class="font-display text-5xl text-primary px-10 flex items-center gap-4">
+            $YOU <span class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span>
+            $YOU <span class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span>
+          </div>
+          <div class="font-display text-5xl text-primary px-10 flex items-center gap-4">
+            $YOU <span class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span>
+            $YOU <span class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span> $YOU <span class="material-icons">bolt</span> $YOU <span
+              class="material-icons">bolt</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="bg-black text-white py-12 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col items-center gap-8">
+      <div class="font-display text-5xl text-primary">
+        <img src="logo.jpeg" alt="$YOU Logo" class="h-20 w-auto rounded-xl border-4 border-black" />
+      </div>
+      <div class="flex gap-8 font-display text-2xl">
+        <a class="hover:text-comic-red transition-colors" href="#">TWITTER</a>
+        <a class="hover:text-comic-blue transition-colors" href="#">DEXSCREENER</a>
+      </div>
+    </div>
+  </footer>
+  <script>
+    function copyToClipboard() {
+      const text = "0xYOU_MEME_CONTRACT_ADDRESS_MAINNET";
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Contract Address Copied!");
+      });
+    }
+    // Simple infinite scroll mimic
+    const style = document.createElement('style');
+    style.textContent = `
+            @keyframes infinite-scroll {
+                from { transform: translateX(0); }
+                to { transform: translateX(-50%); }
+            }
+            .animate-infinite-scroll {
+                animation: infinite-scroll 10s linear infinite;
+            }
+        `;
+    document.head.append(style);
+    // Dark mode preference check removed to enforce light mode
+  </script>
+
+</body>
+
+</html>
